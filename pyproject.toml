@@ -1,0 +1,87 @@
+[project]
+name = "tag-sync"
+version = "0.1.0"
+description = "A CLI tool for syncing git tags with project versions"
+authors = [
+    {name = "Tucker Beck", email = "tucker.beck@gmail.com"},
+]
+readme = "README.md"
+license-files = ["LICENSE.md"]
+requires-python = ">=3.13"
+dependencies = [
+    "bidict>=0.23.1",
+    "gitpython>=3.1.46",
+    "loguru>=0.7",
+    "py-buzz>=4.0",
+    "pydantic>=2.12.5",
+    "snick>=2.0",
+    "typerdrive>=0.9",
+]
+
+[project.urls]
+homepage = "https://github.com/dusktreader/tag-sync"
+source = "https://github.com/dusktreader/tag-sync"
+changelog = "https://github.com/dusktreader/tag-sync/blob/main/CHANGELOG.md"
+
+[project.scripts]
+tag-sync = "tag_sync.cli.main:cli"
+
+
+[dependency-groups]
+dev = [
+    "debugpy~=1.8",
+    "ipython~=8.18",
+    "zensical>=0.0.31",
+    "pyclean~=3.1",
+    "pygments~=2.19",
+    "pytest~=8.3",
+    "pytest-bdd>=7.0.0",
+    "pytest-cov~=6.0",
+    "pytest-mock~=3.14",
+    "pytest-pretty~=1.2",
+    "pytest-random-order~=1.1",
+    "ruff~=0.11",
+    "ty~=0.0",
+    "typos~=1.31",
+]
+
+
+[tool.uv]
+package = true
+
+
+[tool.pytest.ini_options]
+addopts = [
+    "--random-order",
+    "--cov=src/tag_sync",
+    "--cov-report=term-missing",
+    "--cov-fail-under=85",
+    "--cov-report=xml:.coverage.xml",
+    "--junitxml=.junit.xml",
+    "--override-ini=junit_family=legacy",
+]
+testpaths = ["tests"]
+pythonpath = ["src"]
+python_files = ["test_*.py", "*_steps.py"]
+markers = [
+    "integration: Integration tests that exercise real git repos and packager files",
+    "unit: Fast unit tests with all external dependencies mocked",
+]
+
+
+[tool.ruff]
+line-length = 120
+src = ["src/tag_sync", "tests"]
+
+
+[tool.ruff.format]
+docstring-code-format = true
+
+
+[tool.typos.default]
+extend-ignore-identifiers-re = []
+
+
+[build-system]
+requires = ["uv-build>=0.1.0"]
+build-backend = "uv_build"

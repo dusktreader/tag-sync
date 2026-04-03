@@ -1,0 +1,47 @@
+site_name: tag-sync documentation
+site_url: http://dusktreader.github.io/tag-sync
+repo_url: https://github.com/dusktreader/tag-sync
+docs_dir: source
+theme:
+  name: material
+  favicon: images/tag-sync-icon.png
+  logo: images/tag-sync-icon.png
+  features:
+    - navigation.expand
+    - navigation.footer
+    - navigation.tracking
+    - content.code.copy
+  font:
+    code: Fira Code
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Features: features.md
+  - Publishing: publishing.md
+plugins:
+  search:
+    lang: en
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite:
+  - pymdownx.snippets:
+  - pymdownx.superfences:
+  - pymdownx.details:
+  - admonition:
+  - attr_list:
