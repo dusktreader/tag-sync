@@ -21,7 +21,7 @@ jobs:
       uses: astral-sh/setup-uv@v7
 
     - name: Verify tag matches package version
-      run: uvx tag-sync check ${{ github.ref_name }}
+      run: uvx --from git+https://github.com/dusktreader/tag-sync tag-sync check ${{ github.ref_name }}
 
     - name: Build package
       run: uv build
