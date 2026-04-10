@@ -1,13 +1,13 @@
 [project]
 name = "tag-sync"
-version = "0.1.0"
+version = "0.1.1"
 description = "A CLI tool for syncing git tags with project versions"
 authors = [
     {name = "Tucker Beck", email = "tucker.beck@gmail.com"},
 ]
 readme = "README.md"
 license-files = ["LICENSE.md"]
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "bidict>=0.23.1",
     "gitpython>=3.1.46",
