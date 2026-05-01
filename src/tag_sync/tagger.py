@@ -7,6 +7,15 @@ from tag_sync.packager import Packager
 from tag_sync.pattern import Pattern
 from tag_sync.semver import SemVer
 
+# Placeholder used in tag name templates to mark the version substitution site.
+TAG_NAME_VERSION_PLACEHOLDER = "{version}"
+
+# Default tag name template: prefix the bare semver with "v".
+DEFAULT_TAG_PATTERN = "v{version}"
+
+# Pattern template that produces a bare semver with no prefix (e.g. "1.2.3").
+_BARE_SEMVER_PATTERN_TEMPLATE = "<major>.<minor>.<patch>-<pre_type:alpha|beta|rc|dev>.<pre_id>"
+
 
 class Tagger:
     pattern: Pattern
@@ -25,6 +34,72 @@ class Tagger:
             pretype_map=pretype_map,
         )
         self.version = self.parse(version_string)
+
+    @classmethod
+    def _pattern_template_from_tag_pattern(cls, tag_pattern: str) -> str:
+        """Derive a `Pattern`-compatible template string from a tag name template."""
+        idx = tag_pattern.find(TAG_NAME_VERSION_PLACEHOLDER)
+        prefix = tag_pattern[:idx]
+        suffix = tag_pattern[idx + len(TAG_NAME_VERSION_PLACEHOLDER):]
+        return f"{prefix}{_BARE_SEMVER_PATTERN_TEMPLATE}{suffix}"
+
+    @classmethod
+    def from_tag_pattern(cls, semver: SemVer, tag_pattern: str = DEFAULT_TAG_PATTERN) -> "Tagger":
+        """
+        Construct a `Tagger` from a `SemVer` and a tag name template.
+
+        The `tag_pattern` must contain `{version}`, which is replaced with the
+        bare semver string (no `v` prefix, e.g. `1.2.3` or `1.2.3-alpha.1`).
+        The resulting full tag is parsed back using a pattern derived from
+        `tag_pattern` so that all git operations use the correct tag name.
+
+        Example:
+            `Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")`
+            produces a `Tagger` whose git tag is `"release/qastg/1.2.3"`.
+        """
+        bare_pattern = Pattern(_BARE_SEMVER_PATTERN_TEMPLATE)
+        bare_version = bare_pattern.format(semver)
+        idx = tag_pattern.find(TAG_NAME_VERSION_PLACEHOLDER)
+        prefix = tag_pattern[:idx]
+        suffix = tag_pattern[idx + len(TAG_NAME_VERSION_PLACEHOLDER):]
+        full_tag = f"{prefix}{bare_version}{suffix}"
+        return cls(full_tag, pattern_template=cls._pattern_template_from_tag_pattern(tag_pattern))
+
+    @classmethod
+    def from_version_string(cls, version_string: str, tag_pattern: str = DEFAULT_TAG_PATTERN) -> "Tagger":
+        """
+        Construct a `Tagger` from a bare semver string and a tag name template.
+
+        The `version_string` must be a bare semver with no prefix (e.g. `1.2.3`
+        or `1.2.3-alpha.1`).  The `tag_pattern` controls the full git tag name.
+
+        This is a convenience wrapper around `from_tag_pattern` for callers that
+        have the version as a string rather than a `SemVer` object.
+
+        Example:
+            `Tagger.from_version_string("1.2.3", "release/qastg/{version}")`
+            produces a `Tagger` whose git tag is `"release/qastg/1.2.3"`.
+        """
+        bare_pattern = Pattern(_BARE_SEMVER_PATTERN_TEMPLATE)
+        semver = bare_pattern.parse(version_string)
+        return cls.from_tag_pattern(semver, tag_pattern)
+
+    @classmethod
+    def from_tag_string(cls, tag_string: str, tag_pattern: str = DEFAULT_TAG_PATTERN) -> "Tagger":
+        """
+        Construct a `Tagger` by parsing a full tag string against a tag name template.
+
+        The `tag_pattern` is used to derive a `Pattern` that can parse `tag_string`,
+        extracting the semver from the prefix and/or suffix.  Use this when the full
+        git tag name is available (e.g. from user input or `github.ref_name`) and you
+        need to extract the semver and wire up git operations.
+
+        Example:
+            `Tagger.from_tag_string("release/qastg/1.2.3", "release/qastg/{version}")`
+            produces a `Tagger` whose git tag is `"release/qastg/1.2.3"` and whose
+            version is `SemVer(1, 2, 3)`.
+        """
+        return cls(tag_string, pattern_template=cls._pattern_template_from_tag_pattern(tag_pattern))
 
     def parse(self, version_string: str) -> SemVer:
         return self.pattern.parse(version_string)

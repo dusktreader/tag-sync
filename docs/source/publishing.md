@@ -9,7 +9,7 @@ publishes your package to a registry whenever a `tag-sync` tag is pushed.
 
 ## How the workflow fits together
 
-`tag-sync publish` creates and pushes the git tag.  GitHub Actions detects that
+`tag-sync publish` creates and pushes the git tag. GitHub Actions detects that
 push and runs the workflow, which:
 
 1. Verifies the pushed tag matches the current version in the manifest using
@@ -21,18 +21,48 @@ push and runs the workflow, which:
 
 ## Tag pattern matching
 
-All examples below use `v[0-9]+.[0-9]+.[0-9]+*` as the trigger pattern.  This
-matches the default `tag-sync` pattern for stable releases (`v1.2.3`) as well
-as pre-release suffixes (`v1.2.3a1`, `v1.2.3b2`, `v1.2.3rc1`), while
-rejecting arbitrary strings that merely start with `v`.
+### Trigger filter
 
-If you use a custom tag pattern, adjust the filter accordingly:
+The `on.push.tags` filter in the workflow must match whatever pattern
+`tag-sync` is configured to produce.
+
+Default pattern (`v{version}`) — matches `v1.2.3`, `v1.2.3-alpha.1`, etc.:
 
 ```yaml
 on:
   push:
     tags:
-      - "release/[0-9]+.[0-9]+.[0-9]+*"
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+```
+
+Custom pattern (e.g. `release/qastg/{version}`) — adjust accordingly:
+
+```yaml
+on:
+  push:
+    tags:
+      - "release/qastg/[0-9]+.[0-9]+.[0-9]+*"
+```
+
+### Passing the version to `tag-sync check`
+
+`tag-sync check` takes a bare semver. The tag pattern parses the version out of
+`${{ github.ref_name }}` automatically, so pass it directly:
+
+```yaml
+- name: Verify tag matches package version
+  run: uvx tag-sync check ${{ github.ref_name }}
+```
+
+If your project uses a custom tag pattern and has a config file
+(`.tag-sync.toml`, `pyproject.toml [tool.tag-sync]`, etc.), `tag-sync` reads
+the pattern automatically. No extra flags needed.
+
+Without a config file, pass `--tag-pattern` explicitly:
+
+```yaml
+- name: Verify tag matches package version
+  run: uvx tag-sync check ${{ github.ref_name }} --tag-pattern "release/qastg/{version}"
 ```
 
 
@@ -43,7 +73,7 @@ on:
 
 ### Authentication: OIDC trusted publishing
 
-The recommended approach is **OIDC trusted publishing**.  PyPI issues a
+The recommended approach is **OIDC trusted publishing**. PyPI issues a
 short-lived token directly to the workflow at runtime — no API tokens or
 secrets need to be stored in GitHub.
 
@@ -66,7 +96,7 @@ secrets need to be stored in GitHub.
 #### One-time GitHub setup
 
 In your repository go to **Settings** → **Environments** and create an
-environment named `pypi`.  You can add protection rules here — for example,
+environment named `pypi`. You can add protection rules here — for example,
 requiring manual approval from a trusted reviewer before each publish run.
 
 ----

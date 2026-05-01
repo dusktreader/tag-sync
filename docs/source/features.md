@@ -31,37 +31,110 @@ without changing your working directory:
 tag-sync publish -d ~/projects/my-lib
 ```
 
-The directory is passed to the packager for manifest lookup and used as the
+The directory is used for manifest lookup, config file discovery, and as the
 working directory for all git operations.
 
 
-## Tag pattern
+## Tag pattern and configuration
 
-Tags are formatted as `v<major>.<minor>.<patch>` by default (e.g. `v1.2.3`).
-The pattern is derived from the package version using SemVer parsing, so
-non-standard version strings are caught early with a clear error.
+Every command works with a bare semver version number (e.g. `1.2.3`). A
+separate tag pattern controls what the full git tag name looks like.
+
+The default pattern is `v{version}`, which produces tags like `v1.2.3`. The
+`{version}` placeholder is always substituted with the bare semver.
+
+To use a different pattern, pass `--tag-pattern` on the command line:
+
+```bash
+tag-sync publish --tag-pattern "release/qastg/{version}"
+# creates the tag: release/qastg/1.2.3
+
+tag-sync verify  --tag-pattern "release/qastg/{version}"
+tag-sync check   1.2.3 --tag-pattern "release/qastg/{version}"
+tag-sync nuke    1.2.3 --tag-pattern "release/qastg/{version}" --force
+```
+
+### Project config file
+
+Repeating `--tag-pattern` on every command is tedious. Put it in a project
+config file instead. `tag-sync` looks for configuration in the following
+locations (exactly one must be present or none at all — having more than one
+is an error):
+
+| Location | Format |
+|----------|--------|
+| `.tag-sync.toml` | TOML |
+| `.tag-sync.json` | JSON |
+| `.tag-sync.yaml` / `.tag-sync.yml` | YAML |
+| `pyproject.toml` under `[tool.tag-sync]` | TOML (embedded) |
+| `package.json` under `"tag-sync"` key | JSON (embedded) |
+
+Example — standalone TOML:
+
+```toml
+# .tag-sync.toml
+tag_pattern = "release/qastg/{version}"
+```
+
+Example — embedded in `pyproject.toml`:
+
+```toml
+[tool.tag-sync]
+tag_pattern = "release/qastg/{version}"
+```
+
+Example — embedded in `package.json`:
+
+```json
+{
+  "name": "my-package",
+  "version": "1.2.3",
+  "tag-sync": {
+    "tag_pattern": "release/qastg/{version}"
+  }
+}
+```
+
+With any of these in place, all commands pick up the pattern automatically and
+`--tag-pattern` can be omitted:
+
+```bash
+tag-sync verify
+tag-sync check 1.2.3
+tag-sync publish
+tag-sync nuke 1.2.3 --force
+```
+
+`--tag-pattern` on the command line always overrides the config file, so you
+can use the config for the common case and override it for one-off runs.
+
+Any unrecognized key in the config raises an error immediately rather than
+silently being ignored.
 
 
-## Verify Publication
+## Verify publication
 
-Reports whether the tag derived from the current package version is already
-published on origin.  No git state is modified.
+Reports whether the tag for the current package version is already published
+on origin. No git state is modified.
 
 ```bash
 tag-sync verify
 ```
 
 
-## Check that a tag matches
+## Check that a version matches
 
-Validates that an explicit tag string matches the current package version.
-Useful as a pre-publish sanity check in CI or a Makefile.
+Validates that a full tag name matches the current package version. Useful as a
+pre-publish sanity check in CI or a Makefile.
 
 ```bash
-tag-sync check v1.2.3
+tag-sync check 1.2.3
 ```
 
-Exits with a non-zero code if the tag does not match.
+The argument is the bare semver. The tag pattern (from config or `--tag-pattern`)
+derives the full tag name before comparing it against the manifest.
+
+Exits with a non-zero code if the version does not match.
 
 
 ## Publish a new tag matching the project version
@@ -72,23 +145,23 @@ Creates a git tag and pushes it to origin.
 # Derive tag from package version (no version-match check)
 tag-sync publish
 
-# Supply tag explicitly (validates against package version first)
-tag-sync publish v1.2.3
+# Supply version explicitly (validates against package version first)
+tag-sync publish 1.2.3
 ```
 
 
 ### Already-published guard
 
 `tag-sync publish` always checks that the tag is not already on origin before
-pushing.  If it is, the command fails with a clear message.
+pushing. If it is, the command fails with a clear message.
 
 
 ### --replace
 
-Pass `--replace` to overwrite an existing tag.  You will be prompted to
-confirm; the old tag is deleted locally and on origin before the new one is
-created.  If `--replace` is given but the tag is not yet published, the flag is
-silently ignored and the normal publish flow runs.
+Pass `--replace` to overwrite an existing tag. You will be prompted to confirm;
+the old tag is deleted locally and on origin before the new one is created. If
+`--replace` is given but the tag is not yet published, the flag is silently
+ignored and the normal publish flow runs.
 
 ```bash
 tag-sync publish --replace
@@ -103,20 +176,20 @@ Print what would happen without making any changes to local or remote state:
 tag-sync publish --dry-run
 ```
 
-----
+---
 
 ## nuke
 
-Deletes a tag from both the local repository and origin.  Prompts for
+Deletes a tag from both the local repository and origin. Prompts for
 confirmation by default.
 
 ```bash
-tag-sync nuke v1.2.3
+tag-sync nuke 1.2.3
 
 # Skip the prompt
-tag-sync nuke v1.2.3 --force
+tag-sync nuke 1.2.3 --force
 ```
 
 ```bash
-tag-sync nuke v1.2.3 --dry-run
+tag-sync nuke 1.2.3 --dry-run
 ```

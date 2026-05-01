@@ -6,7 +6,7 @@ def get_version_from_metadata() -> str:
     return metadata.version(__package__ or __name__)
 
 
-def get_version_from_pyproject() -> str:
+def get_version_from_pyproject() -> str:  # pragma: no cover
     with open("pyproject.toml", "rb") as file:
         return tomllib.load(file)["project"]["version"]
 
@@ -14,7 +14,7 @@ def get_version_from_pyproject() -> str:
 def get_version() -> str:
     try:
         return get_version_from_metadata()
-    except metadata.PackageNotFoundError:
+    except metadata.PackageNotFoundError:  # pragma: no cover
         try:
             return get_version_from_pyproject()
         except (FileNotFoundError, KeyError):

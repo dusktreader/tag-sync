@@ -940,7 +940,7 @@ wheels = [
 
 [[package]]
 name = "tag-sync"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "bidict" },
@@ -948,6 +948,7 @@ dependencies = [
     { name = "loguru" },
     { name = "py-buzz" },
     { name = "pydantic" },
+    { name = "pyyaml" },
     { name = "snick" },
     { name = "typerdrive" },
 ]
@@ -977,6 +978,7 @@ requires-dist = [
     { name = "loguru", specifier = ">=0.7" },
     { name = "py-buzz", specifier = ">=4.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "snick", specifier = ">=2.0" },
     { name = "typerdrive", specifier = ">=0.9" },
 ]
