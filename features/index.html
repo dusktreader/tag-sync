@@ -371,13 +371,30 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tag-pattern" class="md-nav__link">
+  <a href="#tag-pattern-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tag pattern
+        Tag pattern and configuration
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Tag pattern and configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#project-config-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project config file
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -385,7 +402,7 @@
   <a href="#verify-publication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Verify Publication
+        Verify publication
       
     </span>
   </a>
@@ -393,10 +410,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#check-that-a-tag-matches" class="md-nav__link">
+  <a href="#check-that-a-version-matches" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Check that a tag matches
+        Check that a version matches
       
     </span>
   </a>
@@ -562,13 +579,30 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tag-pattern" class="md-nav__link">
+  <a href="#tag-pattern-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tag pattern
+        Tag pattern and configuration
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Tag pattern and configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#project-config-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project config file
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -576,7 +610,7 @@
   <a href="#verify-publication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Verify Publication
+        Verify publication
       
     </span>
   </a>
@@ -584,10 +618,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#check-that-a-tag-matches" class="md-nav__link">
+  <a href="#check-that-a-version-matches" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Check that a tag matches
+        Check that a version matches
       
     </span>
   </a>
@@ -706,55 +740,129 @@ asks you to pass <code>--packager</code> explicitly.</p>
 without changing your working directory:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>-d<span class="w"> </span>~/projects/my-lib
 </span></code></pre></div>
-<p>The directory is passed to the packager for manifest lookup and used as the
+<p>The directory is used for manifest lookup, config file discovery, and as the
 working directory for all git operations.</p>
-<h2 id="tag-pattern">Tag pattern</h2>
-<p>Tags are formatted as <code>v&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;</code> by default (e.g. <code>v1.2.3</code>).
-The pattern is derived from the package version using SemVer parsing, so
-non-standard version strings are caught early with a clear error.</p>
-<h2 id="verify-publication">Verify Publication</h2>
-<p>Reports whether the tag derived from the current package version is already
-published on origin.  No git state is modified.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>tag-sync<span class="w"> </span>verify
+<h2 id="tag-pattern-and-configuration">Tag pattern and configuration</h2>
+<p>Every command works with a bare semver version number (e.g. <code>1.2.3</code>). A
+separate tag pattern controls what the full git tag name looks like.</p>
+<p>The default pattern is <code>v{version}</code>, which produces tags like <code>v1.2.3</code>. The
+<code>{version}</code> placeholder is always substituted with the bare semver.</p>
+<p>To use a different pattern, pass <code>--tag-pattern</code> on the command line:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># creates the tag: release/qastg/1.2.3</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>tag-sync<span class="w"> </span>verify<span class="w">  </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>tag-sync<span class="w"> </span>check<span class="w">   </span><span class="m">1</span>.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>tag-sync<span class="w"> </span>nuke<span class="w">    </span><span class="m">1</span>.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span><span class="w"> </span>--force
 </span></code></pre></div>
-<h2 id="check-that-a-tag-matches">Check that a tag matches</h2>
-<p>Validates that an explicit tag string matches the current package version.
-Useful as a pre-publish sanity check in CI or a Makefile.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>tag-sync<span class="w"> </span>check<span class="w"> </span>v1.2.3
+<h3 id="project-config-file">Project config file</h3>
+<p>Repeating <code>--tag-pattern</code> on every command is tedious. Put it in a project
+config file instead. <code>tag-sync</code> looks for configuration in the following
+locations (exactly one must be present or none at all — having more than one
+is an error):</p>
+<table>
+<thead>
+<tr>
+<th>Location</th>
+<th>Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.tag-sync.toml</code></td>
+<td>TOML</td>
+</tr>
+<tr>
+<td><code>.tag-sync.json</code></td>
+<td>JSON</td>
+</tr>
+<tr>
+<td><code>.tag-sync.yaml</code> / <code>.tag-sync.yml</code></td>
+<td>YAML</td>
+</tr>
+<tr>
+<td><code>pyproject.toml</code> under <code>[tool.tag-sync]</code></td>
+<td>TOML (embedded)</td>
+</tr>
+<tr>
+<td><code>package.json</code> under <code>"tag-sync"</code> key</td>
+<td>JSON (embedded)</td>
+</tr>
+</tbody>
+</table>
+<p>Example — standalone TOML:</p>
+<div class="language-toml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># .tag-sync.toml</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">tag_pattern</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
 </span></code></pre></div>
-<p>Exits with a non-zero code if the tag does not match.</p>
+<p>Example — embedded in <code>pyproject.toml</code>:</p>
+<div class="language-toml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">[tool.tag-sync]</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">tag_pattern</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
+</span></code></pre></div>
+<p>Example — embedded in <code>package.json</code>:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-package&quot;</span><span class="p">,</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.2.3&quot;</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">&quot;tag-sync&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="nt">&quot;tag_pattern&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>With any of these in place, all commands pick up the pattern automatically and
+<code>--tag-pattern</code> can be omitted:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>tag-sync<span class="w"> </span>verify
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>tag-sync<span class="w"> </span>check<span class="w"> </span><span class="m">1</span>.2.3
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>tag-sync<span class="w"> </span>publish
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3<span class="w"> </span>--force
+</span></code></pre></div>
+<p><code>--tag-pattern</code> on the command line always overrides the config file, so you
+can use the config for the common case and override it for one-off runs.</p>
+<p>Any unrecognized key in the config raises an error immediately rather than
+silently being ignored.</p>
+<h2 id="verify-publication">Verify publication</h2>
+<p>Reports whether the tag for the current package version is already published
+on origin. No git state is modified.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>tag-sync<span class="w"> </span>verify
+</span></code></pre></div>
+<h2 id="check-that-a-version-matches">Check that a version matches</h2>
+<p>Validates that a full tag name matches the current package version. Useful as a
+pre-publish sanity check in CI or a Makefile.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>tag-sync<span class="w"> </span>check<span class="w"> </span><span class="m">1</span>.2.3
+</span></code></pre></div>
+<p>The argument is the bare semver. The tag pattern (from config or <code>--tag-pattern</code>)
+derives the full tag name before comparing it against the manifest.</p>
+<p>Exits with a non-zero code if the version does not match.</p>
 <h2 id="publish-a-new-tag-matching-the-project-version">Publish a new tag matching the project version</h2>
 <p>Creates a git tag and pushes it to origin.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Derive tag from package version (no version-match check)</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>tag-sync<span class="w"> </span>publish
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Supply tag explicitly (validates against package version first)</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>v1.2.3
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Derive tag from package version (no version-match check)</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>tag-sync<span class="w"> </span>publish
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Supply version explicitly (validates against package version first)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span><span class="m">1</span>.2.3
 </span></code></pre></div>
 <h3 id="already-published-guard">Already-published guard</h3>
 <p><code>tag-sync publish</code> always checks that the tag is not already on origin before
-pushing.  If it is, the command fails with a clear message.</p>
+pushing. If it is, the command fails with a clear message.</p>
 <h3 id="-replace">--replace</h3>
-<p>Pass <code>--replace</code> to overwrite an existing tag.  You will be prompted to
-confirm; the old tag is deleted locally and on origin before the new one is
-created.  If <code>--replace</code> is given but the tag is not yet published, the flag is
-silently ignored and the normal publish flow runs.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>--replace
+<p>Pass <code>--replace</code> to overwrite an existing tag. You will be prompted to confirm;
+the old tag is deleted locally and on origin before the new one is created. If
+<code>--replace</code> is given but the tag is not yet published, the flag is silently
+ignored and the normal publish flow runs.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>--replace
 </span></code></pre></div>
 <h3 id="-dry-run">--dry-run</h3>
 <p>Print what would happen without making any changes to local or remote state:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>--dry-run
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>--dry-run
 </span></code></pre></div>
 <hr />
 <h2 id="nuke">nuke</h2>
-<p>Deletes a tag from both the local repository and origin.  Prompts for
+<p>Deletes a tag from both the local repository and origin. Prompts for
 confirmation by default.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span>v1.2.3
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># Skip the prompt</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span>v1.2.3<span class="w"> </span>--force
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c1"># Skip the prompt</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3<span class="w"> </span>--force
 </span></code></pre></div>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span>v1.2.3<span class="w"> </span>--dry-run
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3<span class="w"> </span>--dry-run
 </span></code></pre></div>
 
 

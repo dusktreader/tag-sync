@@ -378,10 +378,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#validate-that-a-tag-matches-the-current-version" class="md-nav__link">
+  <a href="#validate-that-a-version-matches-your-project" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Validate that a tag matches the current version
+        Validate that a version matches your project
       
     </span>
   </a>
@@ -389,10 +389,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#publish-with-an-explicit-tag-with-version-validation" class="md-nav__link">
+  <a href="#publish-with-an-explicit-version-with-version-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Publish with an explicit tag (with version validation)
+        Publish with an explicit version (with version validation)
       
     </span>
   </a>
@@ -423,6 +423,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-a-custom-tag-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using a custom tag pattern
+      
+    </span>
+  </a>
   
 </li>
       
@@ -607,10 +618,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#validate-that-a-tag-matches-the-current-version" class="md-nav__link">
+  <a href="#validate-that-a-version-matches-your-project" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Validate that a tag matches the current version
+        Validate that a version matches your project
       
     </span>
   </a>
@@ -618,10 +629,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#publish-with-an-explicit-tag-with-version-validation" class="md-nav__link">
+  <a href="#publish-with-an-explicit-version-with-version-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Publish with an explicit tag (with version validation)
+        Publish with an explicit version (with version validation)
       
     </span>
   </a>
@@ -652,6 +663,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-a-custom-tag-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using a custom tag pattern
+      
+    </span>
+  </a>
   
 </li>
       
@@ -719,37 +741,50 @@ has a published tag on origin.</p>
 </span></code></pre></div>
 <p>This derives the tag from the package version, confirms the tag is not already
 on origin, creates it locally, and pushes it.</p>
-<h3 id="validate-that-a-tag-matches-the-current-version">Validate that a tag matches the current version</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>tag-sync<span class="w"> </span>check<span class="w"> </span>v1.2.3
+<h3 id="validate-that-a-version-matches-your-project">Validate that a version matches your project</h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>tag-sync<span class="w"> </span>check<span class="w"> </span><span class="m">1</span>.2.3
 </span></code></pre></div>
-<p>Confirms that <code>v1.2.3</code> matches the version in your manifest. A tag argument is
-always required.</p>
-<h3 id="publish-with-an-explicit-tag-with-version-validation">Publish with an explicit tag (with version validation)</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>v1.2.3
+<p>Confirms that <code>1.2.3</code> matches the version in your manifest. The argument is always the
+bare semver — no <code>v</code> prefix or path components.</p>
+<h3 id="publish-with-an-explicit-version-with-version-validation">Publish with an explicit version (with version validation)</h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span><span class="m">1</span>.2.3
 </span></code></pre></div>
-<p>When a tag is supplied explicitly, <code>tag-sync</code> validates it against the manifest
-version before publishing.</p>
+<p>When a version is supplied explicitly, <code>tag-sync</code> validates it against the
+manifest version before publishing.</p>
 <h3 id="replace-an-already-published-tag">Replace an already-published tag</h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>--replace
 </span></code></pre></div>
 <p>If the tag already exists on origin you will be prompted to confirm before the
 old tag is deleted and the new one is pushed.</p>
 <h3 id="remove-a-tag-everywhere">Remove a tag everywhere</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span>v1.2.3
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3
 </span></code></pre></div>
-<p>Deletes the tag from both the local repository and origin.  You will be
-prompted to confirm unless <code>--force</code> is passed.</p>
+<p>Deletes the tag from both the local repository and origin. You will be prompted
+to confirm unless <code>--force</code> is passed.</p>
+<h2 id="using-a-custom-tag-pattern">Using a custom tag pattern</h2>
+<p>By default <code>tag-sync</code> creates tags in <code>v{version}</code> form (e.g. <code>v1.2.3</code>). If
+your project uses a different convention, pass <code>--tag-pattern</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>tag-sync<span class="w"> </span>verify<span class="w">  </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>tag-sync<span class="w"> </span>check<span class="w">   </span><span class="m">1</span>.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>tag-sync<span class="w"> </span>nuke<span class="w">    </span><span class="m">1</span>.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span><span class="w"> </span>--force
+</span></code></pre></div>
+<p><code>{version}</code> is the bare semver (e.g. <code>1.2.3</code>), so <code>publish</code> and <code>verify</code> produce
+tags like <code>release/qastg/1.2.3</code>, and <code>check</code> and <code>nuke</code> accept the bare semver and derive the full tag name.</p>
+<p>To avoid repeating <code>--tag-pattern</code> on every command, put it in a config file
+instead. See the <a href="../features/#tag-pattern-and-configuration">tag pattern and configuration</a>
+section of the features page.</p>
 <h2 id="targeting-a-different-directory">Targeting a different directory</h2>
 <p>All commands accept <code>--directory</code> / <code>-d</code> to point at a project outside the
 current working directory:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>tag-sync<span class="w"> </span>verify<span class="w"> </span>-d<span class="w"> </span>~/projects/my-lib
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>-d<span class="w"> </span>~/projects/my-lib
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>tag-sync<span class="w"> </span>verify<span class="w"> </span>-d<span class="w"> </span>~/projects/my-lib
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>-d<span class="w"> </span>~/projects/my-lib
 </span></code></pre></div>
 <h2 id="specifying-the-packager-explicitly">Specifying the packager explicitly</h2>
 <p>If your project root contains both <code>pyproject.toml</code> and <code>package.json</code>,
 auto-detection will raise an error and ask you to be explicit:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>tag-sync<span class="w"> </span>verify<span class="w"> </span>--packager<span class="w"> </span>uv
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>tag-sync<span class="w"> </span>verify<span class="w"> </span>--packager<span class="w"> </span>npm
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>tag-sync<span class="w"> </span>verify<span class="w"> </span>--packager<span class="w"> </span>uv
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>tag-sync<span class="w"> </span>verify<span class="w"> </span>--packager<span class="w"> </span>npm
 </span></code></pre></div>
 
 
