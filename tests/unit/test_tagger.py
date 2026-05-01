@@ -6,7 +6,7 @@ import pytest
 
 from tag_sync.exceptions import GitError, TagAlreadyPublishedError, VersionMismatchError, VersionParseError
 from tag_sync.packager import Packager, UvPackager
-from tag_sync.tagger import Tagger
+from tag_sync.tagger import DEFAULT_TAG_PATTERN, Tagger
 from tag_sync.semver import SemVer
 
 
@@ -34,6 +34,141 @@ class TestTaggerConstruction:
     def test_invalid_raises(self) -> None:
         with pytest.raises(VersionParseError):
             Tagger("1.2.3")
+
+
+# ---------------------------------------------------------------------------
+# Tagger.from_tag_pattern
+# ---------------------------------------------------------------------------
+
+
+class TestTaggerFromTagPattern:
+    def test_default_tag_pattern_constant_is_v_version(self) -> None:
+        assert DEFAULT_TAG_PATTERN == "v{version}"
+
+    def test_default_tag_pattern_produces_v_prefix(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3))
+        assert tagger.pattern.format(tagger.version) == "v1.2.3"
+
+    def test_custom_prefix_template(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")
+        assert tagger.pattern.format(tagger.version) == "release/qastg/1.2.3"
+
+    def test_custom_prefix_template_no_v(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")
+        tag = tagger.pattern.format(tagger.version)
+        assert tag == "release/qastg/1.2.3"
+        assert not tag.startswith("v")
+
+    def test_prerelease_version(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(2, 0, 0, "alpha", 1), "release/{version}")
+        assert tagger.pattern.format(tagger.version) == "release/2.0.0-alpha.1"
+
+    def test_version_is_correctly_parsed(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(3, 4, 5), "deploy/{version}")
+        assert tagger.version == SemVer(3, 4, 5)
+
+    def test_prerelease_version_is_correctly_parsed(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(1, 0, 0, "beta", 2), "release/{version}")
+        assert tagger.version == SemVer(1, 0, 0, "beta", 2)
+
+    def test_git_ops_use_full_tag(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")
+        mock_repo = MagicMock()
+        with patch("tag_sync.tagger.Repo", return_value=mock_repo):
+            tagger.make_tag()
+        mock_repo.create_tag.assert_called_once_with("release/qastg/1.2.3")
+
+    def test_is_published_uses_full_tag(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")
+        mock_repo = MagicMock()
+        mock_repo.git.ls_remote.return_value = ""
+        with patch("tag_sync.tagger.Repo", return_value=mock_repo):
+            tagger.is_published()
+        mock_repo.git.ls_remote.assert_called_once_with("--tags", "origin", "release/qastg/1.2.3")
+
+    def test_push_tag_uses_full_tag(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")
+        mock_repo = MagicMock()
+        with patch("tag_sync.tagger.Repo", return_value=mock_repo):
+            tagger.push_tag()
+        mock_repo.remotes["origin"].push.assert_called_once_with("release/qastg/1.2.3")
+
+    def test_delete_remote_tag_uses_full_tag(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")
+        mock_repo = MagicMock()
+        with patch("tag_sync.tagger.Repo", return_value=mock_repo):
+            tagger.delete_remote_tag()
+        mock_repo.remotes["origin"].push.assert_called_once_with(
+            refspec=":refs/tags/release/qastg/1.2.3"
+        )
+
+    def test_require_unpublished_error_includes_full_tag(self) -> None:
+        tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")
+        mock_repo = MagicMock()
+        mock_repo.git.ls_remote.return_value = "abc123\trefs/tags/release/qastg/1.2.3\n"
+        with patch("tag_sync.tagger.Repo", return_value=mock_repo):
+            with pytest.raises(TagAlreadyPublishedError, match="release/qastg/1.2.3"):
+                tagger.require_unpublished()
+
+
+# ---------------------------------------------------------------------------
+# Tagger.from_version_string
+# ---------------------------------------------------------------------------
+
+
+class TestTaggerFromVersionString:
+    def test_default_pattern_produces_v_prefix(self) -> None:
+        tagger = Tagger.from_version_string("1.2.3")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "v1.2.3"
+
+    def test_custom_pattern_produces_full_tag(self) -> None:
+        tagger = Tagger.from_version_string("1.2.3", "release/qastg/{version}")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "release/qastg/1.2.3"
+
+    def test_prerelease_version(self) -> None:
+        tagger = Tagger.from_version_string("2.0.0-alpha.1", "release/{version}")
+        assert tagger.version == SemVer(2, 0, 0, "alpha", 1)
+        assert tagger.pattern.format(tagger.version) == "release/2.0.0-alpha.1"
+
+    def test_roundtrip_with_from_tag_pattern(self) -> None:
+        semver = SemVer(3, 4, 5)
+        tag_pattern = "deploy/{version}"
+        tagger_a = Tagger.from_tag_pattern(semver, tag_pattern)
+        tagger_b = Tagger.from_version_string("3.4.5", tag_pattern)
+        assert tagger_b.version == tagger_a.version
+        assert tagger_b.pattern.format(tagger_b.version) == tagger_a.pattern.format(tagger_a.version)
+
+
+# ---------------------------------------------------------------------------
+# Tagger.from_tag_string
+# ---------------------------------------------------------------------------
+
+
+class TestTaggerFromTagString:
+    def test_default_pattern_parses_v_prefixed_tag(self) -> None:
+        tagger = Tagger.from_tag_string("v1.2.3")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "v1.2.3"
+
+    def test_custom_pattern_strips_prefix(self) -> None:
+        tagger = Tagger.from_tag_string("release/qastg/1.2.3", "release/qastg/{version}")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "release/qastg/1.2.3"
+
+    def test_prerelease(self) -> None:
+        tagger = Tagger.from_tag_string("release/2.0.0-alpha.1", "release/{version}")
+        assert tagger.version == SemVer(2, 0, 0, "alpha", 1)
+
+    def test_roundtrip_with_from_tag_pattern(self) -> None:
+        semver = SemVer(3, 4, 5)
+        tag_pattern = "deploy/{version}"
+        tagger_a = Tagger.from_tag_pattern(semver, tag_pattern)
+        full_tag = tagger_a.pattern.format(tagger_a.version)
+        tagger_b = Tagger.from_tag_string(full_tag, tag_pattern)
+        assert tagger_b.version == semver
+        assert tagger_b.pattern.format(tagger_b.version) == full_tag
 
 
 # ---------------------------------------------------------------------------

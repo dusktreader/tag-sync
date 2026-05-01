@@ -43,24 +43,24 @@ This derives the tag from the package version, confirms the tag is not already
 on origin, creates it locally, and pushes it.
 
 
-### Validate that a tag matches the current version
+### Validate that a version matches your project
 
 ```bash
-tag-sync check v1.2.3
+tag-sync check 1.2.3
 ```
 
-Confirms that `v1.2.3` matches the version in your manifest. A tag argument is
-always required.
+Confirms that `1.2.3` matches the version in your manifest. The argument is always the
+bare semver — no `v` prefix or path components.
 
 
-### Publish with an explicit tag (with version validation)
+### Publish with an explicit version (with version validation)
 
 ```bash
-tag-sync publish v1.2.3
+tag-sync publish 1.2.3
 ```
 
-When a tag is supplied explicitly, `tag-sync` validates it against the manifest
-version before publishing.
+When a version is supplied explicitly, `tag-sync` validates it against the
+manifest version before publishing.
 
 
 ### Replace an already-published tag
@@ -76,11 +76,31 @@ old tag is deleted and the new one is pushed.
 ### Remove a tag everywhere
 
 ```bash
-tag-sync nuke v1.2.3
+tag-sync nuke 1.2.3
 ```
 
-Deletes the tag from both the local repository and origin.  You will be
-prompted to confirm unless `--force` is passed.
+Deletes the tag from both the local repository and origin. You will be prompted
+to confirm unless `--force` is passed.
+
+
+## Using a custom tag pattern
+
+By default `tag-sync` creates tags in `v{version}` form (e.g. `v1.2.3`). If
+your project uses a different convention, pass `--tag-pattern`:
+
+```bash
+tag-sync publish --tag-pattern "release/qastg/{version}"
+tag-sync verify  --tag-pattern "release/qastg/{version}"
+tag-sync check   1.2.3 --tag-pattern "release/qastg/{version}"
+tag-sync nuke    1.2.3 --tag-pattern "release/qastg/{version}" --force
+```
+
+`{version}` is the bare semver (e.g. `1.2.3`), so `publish` and `verify` produce
+tags like `release/qastg/1.2.3`, and `check` and `nuke` accept the bare semver and derive the full tag name.
+
+To avoid repeating `--tag-pattern` on every command, put it in a config file
+instead. See the [tag pattern and configuration](features.md#tag-pattern-and-configuration)
+section of the features page.
 
 
 ## Targeting a different directory
