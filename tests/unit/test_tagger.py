@@ -98,9 +98,7 @@ class TestTaggerFromTagPattern:
         mock_repo = MagicMock()
         with patch("tag_sync.tagger.Repo", return_value=mock_repo):
             tagger.delete_remote_tag()
-        mock_repo.remotes["origin"].push.assert_called_once_with(
-            refspec=":refs/tags/release/qastg/1.2.3"
-        )
+        mock_repo.remotes["origin"].push.assert_called_once_with(refspec=":refs/tags/release/qastg/1.2.3")
 
     def test_require_unpublished_error_includes_full_tag(self) -> None:
         tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")

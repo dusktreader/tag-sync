@@ -40,7 +40,7 @@ class Tagger:
         """Derive a `Pattern`-compatible template string from a tag name template."""
         idx = tag_pattern.find(TAG_NAME_VERSION_PLACEHOLDER)
         prefix = tag_pattern[:idx]
-        suffix = tag_pattern[idx + len(TAG_NAME_VERSION_PLACEHOLDER):]
+        suffix = tag_pattern[idx + len(TAG_NAME_VERSION_PLACEHOLDER) :]
         return f"{prefix}{_BARE_SEMVER_PATTERN_TEMPLATE}{suffix}"
 
     @classmethod
@@ -61,7 +61,7 @@ class Tagger:
         bare_version = bare_pattern.format(semver)
         idx = tag_pattern.find(TAG_NAME_VERSION_PLACEHOLDER)
         prefix = tag_pattern[:idx]
-        suffix = tag_pattern[idx + len(TAG_NAME_VERSION_PLACEHOLDER):]
+        suffix = tag_pattern[idx + len(TAG_NAME_VERSION_PLACEHOLDER) :]
         full_tag = f"{prefix}{bare_version}{suffix}"
         return cls(full_tag, pattern_template=cls._pattern_template_from_tag_pattern(tag_pattern))
 

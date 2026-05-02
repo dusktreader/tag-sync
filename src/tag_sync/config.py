@@ -111,8 +111,7 @@ def load_config(directory: Path) -> TagSyncConfig | None:
     if len(sources) > 1:
         labels = ", ".join(s.label for s in sources)
         raise TagSyncError(
-            f"tag-sync configuration found in multiple places: {labels}. "
-            "Provide configuration in exactly one location."
+            f"tag-sync configuration found in multiple places: {labels}. Provide configuration in exactly one location."
         )
 
     if not sources:
@@ -122,6 +121,4 @@ def load_config(directory: Path) -> TagSyncConfig | None:
     try:
         return TagSyncConfig.model_validate(source.data)
     except Exception as exc:
-        raise TagSyncError(
-            f"Invalid tag-sync configuration in {source.label}: {exc}"
-        ) from exc
+        raise TagSyncError(f"Invalid tag-sync configuration in {source.label}: {exc}") from exc

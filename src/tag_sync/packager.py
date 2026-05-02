@@ -2,16 +2,17 @@ import json
 import tomllib
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Protocol, override
+from typing import Protocol, cast, override
 
 from packaging.version import Version
 
 from tag_sync.exceptions import TagSyncError, VersionParseError
+from tag_sync.constants import PRETYPE_CANONICAL
 from tag_sync.pattern import Pattern
 from tag_sync.semver import SemVer
 
 
-_PRE_TYPE_MAP: dict[str, str] = {"a": "alpha", "b": "beta", "rc": "rc"}
+_PRE_TYPE_MAP: dict[str, PRETYPE_CANONICAL] = {"a": "alpha", "b": "beta", "rc": "rc"}
 
 
 def _packaging_version_to_semver(v: Version) -> SemVer:
@@ -24,11 +25,11 @@ def _packaging_version_to_semver(v: Version) -> SemVer:
     """
     if v.post is not None:
         raise VersionParseError(f"Post-release versions are not supported: {v}")
-    pre_type = None
+    pre_type: PRETYPE_CANONICAL | None = None
     pre_id = None
     if v.pre is not None:
         tag, num = v.pre
-        pre_type = _PRE_TYPE_MAP.get(tag, tag)  # type: ignore[assignment]
+        pre_type = _PRE_TYPE_MAP.get(tag, cast(PRETYPE_CANONICAL, tag))
         pre_id = num
     elif v.dev is not None:
         pre_type = "dev"
