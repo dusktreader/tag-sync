@@ -172,6 +172,47 @@ class TestTaggerFromTagString:
 
 
 # ---------------------------------------------------------------------------
+# Tagger.from_version_or_tag_string
+# ---------------------------------------------------------------------------
+
+
+class TestTaggerFromVersionOrTagString:
+    def test_bare_semver_default_pattern(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("1.2.3")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "v1.2.3"
+
+    def test_full_tag_default_pattern(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("v1.2.3")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "v1.2.3"
+
+    def test_full_tag_custom_pattern(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("release/qastg/1.2.3", "release/qastg/{version}")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "release/qastg/1.2.3"
+
+    def test_bare_semver_custom_pattern(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("1.2.3", "release/qastg/{version}")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "release/qastg/1.2.3"
+
+    def test_prerelease_bare_semver(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("2.0.0-alpha.1")
+        assert tagger.version == SemVer(2, 0, 0, "alpha", 1)
+        assert tagger.pattern.format(tagger.version) == "v2.0.0-alpha.1"
+
+    def test_prerelease_full_tag(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("v2.0.0-alpha.1")
+        assert tagger.version == SemVer(2, 0, 0, "alpha", 1)
+        assert tagger.pattern.format(tagger.version) == "v2.0.0-alpha.1"
+
+    def test_invalid_string_raises(self) -> None:
+        with pytest.raises(Exception):
+            Tagger.from_version_or_tag_string("not-a-version")
+
+
+# ---------------------------------------------------------------------------
 # Tagger.check
 # ---------------------------------------------------------------------------
 

@@ -6,10 +6,10 @@
 `tag-sync` inspects the target directory for known manifest files and selects
 the right packager automatically:
 
-| Manifest file    | Packager |
-|------------------|----------|
-| `pyproject.toml` | `uv`     |
-| `package.json`   | `npm`    |
+| Manifest file    | Packager | Version format |
+|------------------|----------|----------------|
+| `pyproject.toml` | `uv`     | PEP 440        |
+| `package.json`   | `npm`    | SemVer         |
 
 If neither or both manifest files are present, `tag-sync` raises an error and
 asks you to pass `--packager` explicitly.
@@ -20,6 +20,31 @@ Use `--packager` to override auto-detection at any time:
 tag-sync verify --packager uv
 tag-sync verify --packager npm
 ```
+
+
+## Version format support
+
+### Python projects (uv / pyproject.toml)
+
+Version strings are parsed with `packaging.version.Version`, so any PEP 440
+string is accepted:
+
+| Version string   | Parsed as                  |
+|------------------|----------------------------|
+| `1.2.3`          | release                    |
+| `1.2`            | release (patch defaults to 0) |
+| `2.0.0a1`        | alpha pre-release          |
+| `1.2.3b2`        | beta pre-release           |
+| `1.0.0rc1`       | release candidate          |
+| `1.0.0.dev3`     | dev release                |
+
+Post-release versions (`1.2.3.post1`) are not supported and raise an error.
+
+### npm projects (package.json)
+
+Version strings follow standard SemVer (`1.2.3`), with optional pre-release
+segments in the form `1.2.3-alpha.1`, `1.2.3-beta.2`, `1.2.3-rc.1`.
+Two-part versions are not valid npm versions and are not accepted.
 
 
 ## Directory targeting
@@ -37,8 +62,9 @@ working directory for all git operations.
 
 ## Tag pattern and configuration
 
-Every command works with a bare semver version number (e.g. `1.2.3`). A
-separate tag pattern controls what the full git tag name looks like.
+Every command that takes an explicit version accepts either a bare semver
+(e.g. `1.2.3`) or the full tag name (e.g. `v1.2.3`). A separate tag pattern
+controls what the full git tag name looks like.
 
 The default pattern is `v{version}`, which produces tags like `v1.2.3`. The
 `{version}` placeholder is always substituted with the bare semver.
@@ -52,6 +78,9 @@ tag-sync publish --tag-pattern "release/qastg/{version}"
 tag-sync verify  --tag-pattern "release/qastg/{version}"
 tag-sync check   1.2.3 --tag-pattern "release/qastg/{version}"
 tag-sync nuke    1.2.3 --tag-pattern "release/qastg/{version}" --force
+# full tag name works too:
+tag-sync check   release/qastg/1.2.3 --tag-pattern "release/qastg/{version}"
+tag-sync nuke    release/qastg/1.2.3 --tag-pattern "release/qastg/{version}" --force
 ```
 
 ### Project config file
@@ -124,15 +153,18 @@ tag-sync verify
 
 ## Check that a version matches
 
-Validates that a full tag name matches the current package version. Useful as a
+Validates that the given version matches the current package version. Useful as a
 pre-publish sanity check in CI or a Makefile.
 
 ```bash
 tag-sync check 1.2.3
+# or pass the full tag name:
+tag-sync check v1.2.3
 ```
 
-The argument is the bare semver. The tag pattern (from config or `--tag-pattern`)
-derives the full tag name before comparing it against the manifest.
+The argument is a bare semver or the full tag name — both work. Bare semver is
+tried first; if it doesn't parse, the configured pattern is used to parse the
+full tag name.
 
 Exits with a non-zero code if the version does not match.
 
@@ -147,6 +179,8 @@ tag-sync publish
 
 # Supply version explicitly (validates against package version first)
 tag-sync publish 1.2.3
+# or pass the full tag name:
+tag-sync publish v1.2.3
 ```
 
 
@@ -185,6 +219,8 @@ confirmation by default.
 
 ```bash
 tag-sync nuke 1.2.3
+# or pass the full tag name:
+tag-sync nuke v1.2.3
 
 # Skip the prompt
 tag-sync nuke 1.2.3 --force

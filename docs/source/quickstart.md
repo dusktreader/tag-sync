@@ -49,8 +49,10 @@ on origin, creates it locally, and pushes it.
 tag-sync check 1.2.3
 ```
 
-Confirms that `1.2.3` matches the version in your manifest. The argument is always the
-bare semver — no `v` prefix or path components.
+Confirms that `1.2.3` matches the version in your manifest. Accepts either a bare
+semver (`1.2.3`) or the full tag name (`v1.2.3`) — bare semver is tried first.
+Python projects also accept two-part versions (`1.2`) and PEP 440 pre-release
+strings (`2.0.0a1`, `1.0.0.dev3`).
 
 
 ### Publish with an explicit version (with version validation)
@@ -60,7 +62,8 @@ tag-sync publish 1.2.3
 ```
 
 When a version is supplied explicitly, `tag-sync` validates it against the
-manifest version before publishing.
+manifest version before publishing. Accepts either a bare semver (`1.2.3`) or
+the full tag name (`v1.2.3`).
 
 
 ### Replace an already-published tag
@@ -80,7 +83,8 @@ tag-sync nuke 1.2.3
 ```
 
 Deletes the tag from both the local repository and origin. You will be prompted
-to confirm unless `--force` is passed.
+to confirm unless `--force` is passed. Accepts either a bare semver (`1.2.3`) or
+the full tag name (`v1.2.3`).
 
 
 ## Using a custom tag pattern
@@ -95,8 +99,9 @@ tag-sync check   1.2.3 --tag-pattern "release/qastg/{version}"
 tag-sync nuke    1.2.3 --tag-pattern "release/qastg/{version}" --force
 ```
 
-`{version}` is the bare semver (e.g. `1.2.3`), so `publish` and `verify` produce
-tags like `release/qastg/1.2.3`, and `check` and `nuke` accept the bare semver and derive the full tag name.
+`{version}` is the bare semver (e.g. `1.2.3`). You can pass either the bare
+semver or the full tag name to `check`, `publish`, and `nuke`; the tag pattern
+is used to derive or parse the full tag name either way.
 
 To avoid repeating `--tag-pattern` on every command, put it in a config file
 instead. See the [tag pattern and configuration](features.md#tag-pattern-and-configuration)

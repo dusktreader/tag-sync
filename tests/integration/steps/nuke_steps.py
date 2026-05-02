@@ -1,7 +1,7 @@
 """Step definitions for nuke.feature."""
 
 import pytest
-from pytest_bdd import scenarios, when
+from pytest_bdd import parsers, scenarios, when
 
 scenarios("../nuke.feature")
 
@@ -11,6 +11,11 @@ pytestmark = pytest.mark.integration
 @when('I run "nuke" with argument "1.2.3" and flag "--force"')
 def run_nuke_force(bdd_context: dict, run_tag_sync) -> None:
     bdd_context["result"] = run_tag_sync("nuke", "--force", "1.2.3")
+
+
+@when(parsers.parse('I run "nuke" with argument "{arg}" and flag "--force"'))
+def run_nuke_arg_force(arg: str, bdd_context: dict, run_tag_sync) -> None:
+    bdd_context["result"] = run_tag_sync("nuke", "--force", arg)
 
 
 @when('I run "nuke" with argument "1.2.3" confirmed via prompt')

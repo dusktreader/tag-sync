@@ -101,6 +101,28 @@ class Tagger:
         """
         return cls(tag_string, pattern_template=cls._pattern_template_from_tag_pattern(tag_pattern))
 
+    @classmethod
+    def from_version_or_tag_string(cls, string: str, tag_pattern: str = DEFAULT_TAG_PATTERN) -> "Tagger":
+        """
+        Construct a `Tagger` from a bare semver string or a full tag string.
+
+        Tries to parse `string` as a bare semver first.  If that fails, parses
+        it as a full tag name using `tag_pattern`.  Both paths use only the
+        configured pattern — there is no cross-pattern fallback.
+
+        This is the right constructor for user-facing inputs where either form
+        is acceptable (e.g. `check` and `nuke` CLI arguments).
+
+        Examples:
+            `from_version_or_tag_string("1.2.3")` — parsed as bare semver
+            `from_version_or_tag_string("v1.2.3")` — parsed as full tag name
+            `from_version_or_tag_string("release/qastg/1.2.3", "release/qastg/{version}")` — full tag
+        """
+        try:
+            return cls.from_version_string(string, tag_pattern)
+        except Exception:
+            return cls.from_tag_string(string, tag_pattern)
+
     def parse(self, version_string: str) -> SemVer:
         return self.pattern.parse(version_string)
 
