@@ -744,13 +744,16 @@ on origin, creates it locally, and pushes it.</p>
 <h3 id="validate-that-a-version-matches-your-project">Validate that a version matches your project</h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>tag-sync<span class="w"> </span>check<span class="w"> </span><span class="m">1</span>.2.3
 </span></code></pre></div>
-<p>Confirms that <code>1.2.3</code> matches the version in your manifest. The argument is always the
-bare semver — no <code>v</code> prefix or path components.</p>
+<p>Confirms that <code>1.2.3</code> matches the version in your manifest. Accepts either a bare
+semver (<code>1.2.3</code>) or the full tag name (<code>v1.2.3</code>) — bare semver is tried first.
+Python projects also accept two-part versions (<code>1.2</code>) and PEP 440 pre-release
+strings (<code>2.0.0a1</code>, <code>1.0.0.dev3</code>).</p>
 <h3 id="publish-with-an-explicit-version-with-version-validation">Publish with an explicit version (with version validation)</h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span><span class="m">1</span>.2.3
 </span></code></pre></div>
 <p>When a version is supplied explicitly, <code>tag-sync</code> validates it against the
-manifest version before publishing.</p>
+manifest version before publishing. Accepts either a bare semver (<code>1.2.3</code>) or
+the full tag name (<code>v1.2.3</code>).</p>
 <h3 id="replace-an-already-published-tag">Replace an already-published tag</h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>--replace
 </span></code></pre></div>
@@ -760,7 +763,8 @@ old tag is deleted and the new one is pushed.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3
 </span></code></pre></div>
 <p>Deletes the tag from both the local repository and origin. You will be prompted
-to confirm unless <code>--force</code> is passed.</p>
+to confirm unless <code>--force</code> is passed. Accepts either a bare semver (<code>1.2.3</code>) or
+the full tag name (<code>v1.2.3</code>).</p>
 <h2 id="using-a-custom-tag-pattern">Using a custom tag pattern</h2>
 <p>By default <code>tag-sync</code> creates tags in <code>v{version}</code> form (e.g. <code>v1.2.3</code>). If
 your project uses a different convention, pass <code>--tag-pattern</code>:</p>
@@ -769,8 +773,9 @@ your project uses a different convention, pass <code>--tag-pattern</code>:</p>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>tag-sync<span class="w"> </span>check<span class="w">   </span><span class="m">1</span>.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>tag-sync<span class="w"> </span>nuke<span class="w">    </span><span class="m">1</span>.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span><span class="w"> </span>--force
 </span></code></pre></div>
-<p><code>{version}</code> is the bare semver (e.g. <code>1.2.3</code>), so <code>publish</code> and <code>verify</code> produce
-tags like <code>release/qastg/1.2.3</code>, and <code>check</code> and <code>nuke</code> accept the bare semver and derive the full tag name.</p>
+<p><code>{version}</code> is the bare semver (e.g. <code>1.2.3</code>). You can pass either the bare
+semver or the full tag name to <code>check</code>, <code>publish</code>, and <code>nuke</code>; the tag pattern
+is used to derive or parse the full tag name either way.</p>
 <p>To avoid repeating <code>--tag-pattern</code> on every command, put it in a config file
 instead. See the <a href="../features/#tag-pattern-and-configuration">tag pattern and configuration</a>
 section of the features page.</p>

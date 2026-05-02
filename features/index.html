@@ -360,6 +360,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#version-format-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version format support
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version format support">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-projects-uv-pyprojecttoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python projects (uv / pyproject.toml)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npm-projects-packagejson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npm projects (package.json)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#directory-targeting" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -568,6 +607,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#version-format-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version format support
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version format support">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-projects-uv-pyprojecttoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python projects (uv / pyproject.toml)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npm-projects-packagejson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npm projects (package.json)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#directory-targeting" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -716,16 +794,19 @@ the right packager automatically:</p>
 <tr>
 <th>Manifest file</th>
 <th>Packager</th>
+<th>Version format</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>pyproject.toml</code></td>
 <td><code>uv</code></td>
+<td>PEP 440</td>
 </tr>
 <tr>
 <td><code>package.json</code></td>
 <td><code>npm</code></td>
+<td>SemVer</td>
 </tr>
 </tbody>
 </table>
@@ -735,6 +816,49 @@ asks you to pass <code>--packager</code> explicitly.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>tag-sync<span class="w"> </span>verify<span class="w"> </span>--packager<span class="w"> </span>uv
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>tag-sync<span class="w"> </span>verify<span class="w"> </span>--packager<span class="w"> </span>npm
 </span></code></pre></div>
+<h2 id="version-format-support">Version format support</h2>
+<h3 id="python-projects-uv-pyprojecttoml">Python projects (uv / pyproject.toml)</h3>
+<p>Version strings are parsed with <code>packaging.version.Version</code>, so any PEP 440
+string is accepted:</p>
+<table>
+<thead>
+<tr>
+<th>Version string</th>
+<th>Parsed as</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1.2.3</code></td>
+<td>release</td>
+</tr>
+<tr>
+<td><code>1.2</code></td>
+<td>release (patch defaults to 0)</td>
+</tr>
+<tr>
+<td><code>2.0.0a1</code></td>
+<td>alpha pre-release</td>
+</tr>
+<tr>
+<td><code>1.2.3b2</code></td>
+<td>beta pre-release</td>
+</tr>
+<tr>
+<td><code>1.0.0rc1</code></td>
+<td>release candidate</td>
+</tr>
+<tr>
+<td><code>1.0.0.dev3</code></td>
+<td>dev release</td>
+</tr>
+</tbody>
+</table>
+<p>Post-release versions (<code>1.2.3.post1</code>) are not supported and raise an error.</p>
+<h3 id="npm-projects-packagejson">npm projects (package.json)</h3>
+<p>Version strings follow standard SemVer (<code>1.2.3</code>), with optional pre-release
+segments in the form <code>1.2.3-alpha.1</code>, <code>1.2.3-beta.2</code>, <code>1.2.3-rc.1</code>.
+Two-part versions are not valid npm versions and are not accepted.</p>
 <h2 id="directory-targeting">Directory targeting</h2>
 <p>All commands accept <code>--directory</code> / <code>-d</code> so you can operate on any project
 without changing your working directory:</p>
@@ -743,8 +867,9 @@ without changing your working directory:</p>
 <p>The directory is used for manifest lookup, config file discovery, and as the
 working directory for all git operations.</p>
 <h2 id="tag-pattern-and-configuration">Tag pattern and configuration</h2>
-<p>Every command works with a bare semver version number (e.g. <code>1.2.3</code>). A
-separate tag pattern controls what the full git tag name looks like.</p>
+<p>Every command that takes an explicit version accepts either a bare semver
+(e.g. <code>1.2.3</code>) or the full tag name (e.g. <code>v1.2.3</code>). A separate tag pattern
+controls what the full git tag name looks like.</p>
 <p>The default pattern is <code>v{version}</code>, which produces tags like <code>v1.2.3</code>. The
 <code>{version}</code> placeholder is always substituted with the bare semver.</p>
 <p>To use a different pattern, pass <code>--tag-pattern</code> on the command line:</p>
@@ -754,6 +879,9 @@ separate tag pattern controls what the full git tag name looks like.</p>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>tag-sync<span class="w"> </span>verify<span class="w">  </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>tag-sync<span class="w"> </span>check<span class="w">   </span><span class="m">1</span>.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>tag-sync<span class="w"> </span>nuke<span class="w">    </span><span class="m">1</span>.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span><span class="w"> </span>--force
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># full tag name works too:</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>tag-sync<span class="w"> </span>check<span class="w">   </span>release/qastg/1.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>tag-sync<span class="w"> </span>nuke<span class="w">    </span>release/qastg/1.2.3<span class="w"> </span>--tag-pattern<span class="w"> </span><span class="s2">&quot;release/qastg/{version}&quot;</span><span class="w"> </span>--force
 </span></code></pre></div>
 <h3 id="project-config-file">Project config file</h3>
 <p>Repeating <code>--tag-pattern</code> on every command is tedious. Put it in a project
@@ -824,12 +952,15 @@ on origin. No git state is modified.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>tag-sync<span class="w"> </span>verify
 </span></code></pre></div>
 <h2 id="check-that-a-version-matches">Check that a version matches</h2>
-<p>Validates that a full tag name matches the current package version. Useful as a
+<p>Validates that the given version matches the current package version. Useful as a
 pre-publish sanity check in CI or a Makefile.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>tag-sync<span class="w"> </span>check<span class="w"> </span><span class="m">1</span>.2.3
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># or pass the full tag name:</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>tag-sync<span class="w"> </span>check<span class="w"> </span>v1.2.3
 </span></code></pre></div>
-<p>The argument is the bare semver. The tag pattern (from config or <code>--tag-pattern</code>)
-derives the full tag name before comparing it against the manifest.</p>
+<p>The argument is a bare semver or the full tag name — both work. Bare semver is
+tried first; if it doesn't parse, the configured pattern is used to parse the
+full tag name.</p>
 <p>Exits with a non-zero code if the version does not match.</p>
 <h2 id="publish-a-new-tag-matching-the-project-version">Publish a new tag matching the project version</h2>
 <p>Creates a git tag and pushes it to origin.</p>
@@ -838,6 +969,8 @@ derives the full tag name before comparing it against the manifest.</p>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Supply version explicitly (validates against package version first)</span>
 </span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span><span class="m">1</span>.2.3
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1"># or pass the full tag name:</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>tag-sync<span class="w"> </span>publish<span class="w"> </span>v1.2.3
 </span></code></pre></div>
 <h3 id="already-published-guard">Already-published guard</h3>
 <p><code>tag-sync publish</code> always checks that the tag is not already on origin before
@@ -858,9 +991,11 @@ ignored and the normal publish flow runs.</p>
 <p>Deletes a tag from both the local repository and origin. Prompts for
 confirmation by default.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c1"># Skip the prompt</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3<span class="w"> </span>--force
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="c1"># or pass the full tag name:</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span>v1.2.3
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Skip the prompt</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3<span class="w"> </span>--force
 </span></code></pre></div>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>tag-sync<span class="w"> </span>nuke<span class="w"> </span><span class="m">1</span>.2.3<span class="w"> </span>--dry-run
 </span></code></pre></div>

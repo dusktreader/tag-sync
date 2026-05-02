@@ -929,8 +929,8 @@ push and runs the workflow, which:</p>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;release/qastg/[0-9]+.[0-9]+.[0-9]+*&quot;</span>
 </span></code></pre></div>
 <h3 id="passing-the-version-to-tag-sync-check">Passing the version to <code>tag-sync check</code></h3>
-<p><code>tag-sync check</code> takes a bare semver. The tag pattern parses the version out of
-<code>${{ github.ref_name }}</code> automatically, so pass it directly:</p>
+<p><code>tag-sync check</code> accepts a bare semver or a full tag name, so pass
+<code>${{ github.ref_name }}</code> directly:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Verify tag matches package version</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uvx tag-sync check ${{ github.ref_name }}</span>
 </span></code></pre></div>
