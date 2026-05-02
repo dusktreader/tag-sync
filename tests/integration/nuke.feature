@@ -11,6 +11,14 @@ Feature: nuke command
     And the tag "v1.2.3" does not exist locally
     And the tag "v1.2.3" does not exist on the upstream
 
+  Scenario: nuke using full tag string with --force
+    Given the tag "v1.2.3" exists locally and on the upstream
+    When I run "nuke" with argument "v1.2.3" and flag "--force"
+    Then the command succeeds
+    And the output contains "removed locally"
+    And the tag "v1.2.3" does not exist locally
+    And the tag "v1.2.3" does not exist on the upstream
+
   Scenario: nuke confirmed via prompt
     Given the tag "v1.2.3" exists locally and on the upstream
     When I run "nuke" with argument "1.2.3" confirmed via prompt

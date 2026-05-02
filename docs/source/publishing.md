@@ -46,8 +46,8 @@ on:
 
 ### Passing the version to `tag-sync check`
 
-`tag-sync check` takes a bare semver. The tag pattern parses the version out of
-`${{ github.ref_name }}` automatically, so pass it directly:
+`tag-sync check` accepts a bare semver or a full tag name, so pass
+`${{ github.ref_name }}` directly:
 
 ```yaml
 - name: Verify tag matches package version

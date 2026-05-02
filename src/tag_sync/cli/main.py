@@ -96,7 +96,8 @@ def verify(
 @handle_errors("check failed")
 def check(
     version_string: Annotated[
-        str, typer.Argument(help="Bare semver to validate against the package version (e.g. 1.2.3)")
+        str,
+        typer.Argument(help="Bare semver or tag name to validate against the package version (e.g. 1.2.3 or v1.2.3)"),
     ],
     packager_name: PackagerOption = None,
     directory: DirectoryOption = Path("."),
@@ -114,7 +115,7 @@ def check(
     logger.debug(f"Checking version: {version_string}")
     packager = resolve_packager(packager_name, directory)
     effective_pattern = _effective_tag_pattern(tag_pattern, directory)
-    tagger = Tagger.from_version_string(version_string, effective_pattern)
+    tagger = Tagger.from_version_or_tag_string(version_string, effective_pattern)
     tagger.check(packager)
     tag = tagger.pattern.format(tagger.version)
     terminal_message(f"Tag [cyan]{tag}[/cyan] matches the package version.", subject="check")
@@ -125,7 +126,9 @@ def check(
 def publish(
     version_string: Annotated[
         str | None,
-        typer.Argument(help="Bare semver to publish (e.g. 1.2.3). Derived from the package version when omitted."),
+        typer.Argument(
+            help="Bare semver or tag name to publish (e.g. 1.2.3 or v1.2.3). Derived from the package version when omitted."
+        ),
     ] = None,
     packager_name: PackagerOption = None,
     directory: DirectoryOption = Path("."),
@@ -153,7 +156,7 @@ def publish(
     effective_pattern = _effective_tag_pattern(tag_pattern, directory)
 
     if version_string is not None:
-        tagger = Tagger.from_version_string(version_string, effective_pattern)
+        tagger = Tagger.from_version_or_tag_string(version_string, effective_pattern)
         tagger.check(packager)
     else:
         tagger = Tagger.from_tag_pattern(packager.package_version, effective_pattern)
@@ -179,7 +182,10 @@ def publish(
 @handle_errors("nuke failed")
 def nuke(
     version_string: Annotated[
-        str, typer.Argument(help="Bare semver of the tag to remove locally and on origin (e.g. 1.2.3)")
+        str,
+        typer.Argument(
+            help="Bare semver or tag name of the tag to remove locally and on origin (e.g. 1.2.3 or v1.2.3)"
+        ),
     ],
     force: Annotated[bool | None, typer.Option(help="Don't prompt to confirm deletion")] = None,
     dry_run: DryRunOption = False,
@@ -193,12 +199,10 @@ def nuke(
     (default: `v{version}`).
     """
     effective_pattern = _effective_tag_pattern(tag_pattern, directory)
-    tagger = Tagger.from_version_string(version_string, effective_pattern)
+    tagger = Tagger.from_version_or_tag_string(version_string, effective_pattern)
     tag = tagger.pattern.format(tagger.version)
     if force is None:
-        force = typer.confirm(
-            f"Are you sure you want to nuke tag {tag}? This will delete it locally and on origin."
-        )
+        force = typer.confirm(f"Are you sure you want to nuke tag {tag}? This will delete it locally and on origin.")
     if not force:
         raise typer.Abort()
     logger.debug(f"Nuking tag: {tag}")

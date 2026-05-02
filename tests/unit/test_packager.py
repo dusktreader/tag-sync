@@ -5,9 +5,19 @@ from pathlib import Path
 import pytest
 
 from tag_sync.exceptions import TagSyncError, VersionParseError
-from tag_sync.packager import PACKAGERS, NpmPackager, Packager, UvPackager, detect_packager, resolve_packager
+from tag_sync.packager import (
+    PACKAGERS,
+    NpmPackager,
+    Packager,
+    UvPackager,
+    _packaging_version_to_semver,
+    _semver_to_python_version_string,
+    detect_packager,
+    resolve_packager,
+)
 from tag_sync.pattern import Pattern
 from tag_sync.semver import SemVer
+from packaging.version import Version
 
 
 # ---------------------------------------------------------------------------
@@ -35,6 +45,60 @@ def concrete_packager(uv_pattern: Pattern) -> Packager:
             raise NotImplementedError
 
     return _TestPackager()
+
+
+# ---------------------------------------------------------------------------
+# _packaging_version_to_semver
+# ---------------------------------------------------------------------------
+
+
+class TestPackagingVersionToSemver:
+    def test_three_part_release(self) -> None:
+        assert _packaging_version_to_semver(Version("1.2.3")) == SemVer(1, 2, 3)
+
+    def test_two_part_version_defaults_patch_to_zero(self) -> None:
+        assert _packaging_version_to_semver(Version("1.2")) == SemVer(1, 2, 0)
+
+    def test_alpha_pre_release(self) -> None:
+        assert _packaging_version_to_semver(Version("2.0.0a1")) == SemVer(2, 0, 0, "alpha", 1)
+
+    def test_beta_pre_release(self) -> None:
+        assert _packaging_version_to_semver(Version("1.2.3b2")) == SemVer(1, 2, 3, "beta", 2)
+
+    def test_rc_pre_release(self) -> None:
+        assert _packaging_version_to_semver(Version("1.0.0rc1")) == SemVer(1, 0, 0, "rc", 1)
+
+    def test_dev_release(self) -> None:
+        assert _packaging_version_to_semver(Version("1.0.0.dev3")) == SemVer(1, 0, 0, "dev", 3)
+
+    def test_post_release_raises(self) -> None:
+        with pytest.raises(VersionParseError, match="Post-release versions are not supported"):
+            _packaging_version_to_semver(Version("1.2.3.post1"))
+
+
+# ---------------------------------------------------------------------------
+# _semver_to_python_version_string
+# ---------------------------------------------------------------------------
+
+
+class TestSemverToPythonVersionString:
+    def test_release(self) -> None:
+        assert _semver_to_python_version_string(SemVer(1, 2, 3)) == "1.2.3"
+
+    def test_two_part_equivalent(self) -> None:
+        assert _semver_to_python_version_string(SemVer(1, 2, 0)) == "1.2.0"
+
+    def test_alpha(self) -> None:
+        assert _semver_to_python_version_string(SemVer(2, 0, 0, "alpha", 1)) == "2.0.0a1"
+
+    def test_beta(self) -> None:
+        assert _semver_to_python_version_string(SemVer(1, 2, 3, "beta", 2)) == "1.2.3b2"
+
+    def test_rc(self) -> None:
+        assert _semver_to_python_version_string(SemVer(1, 0, 0, "rc", 1)) == "1.0.0rc1"
+
+    def test_dev(self) -> None:
+        assert _semver_to_python_version_string(SemVer(1, 0, 0, "dev", 3)) == "1.0.0.dev3"
 
 
 # ---------------------------------------------------------------------------
@@ -85,11 +149,36 @@ class TestUvPackager:
     def test_pretype_map_dev_identity(self) -> None:
         assert UvPackager().pattern.pretype_map["dev"] == "dev"
 
+    def test_parse_release(self) -> None:
+        assert UvPackager().parse("1.2.3") == SemVer(1, 2, 3)
+
+    def test_parse_two_part_version(self) -> None:
+        assert UvPackager().parse("1.2") == SemVer(1, 2, 0)
+
     def test_parse_alpha_maps_to_canonical(self) -> None:
         assert UvPackager().parse("2.0.0a1") == SemVer(2, 0, 0, "alpha", 1)
 
-    def test_format_canonical_back_to_short(self) -> None:
+    def test_parse_beta_maps_to_canonical(self) -> None:
+        assert UvPackager().parse("1.2.3b2") == SemVer(1, 2, 3, "beta", 2)
+
+    def test_parse_rc(self) -> None:
+        assert UvPackager().parse("1.0.0rc1") == SemVer(1, 0, 0, "rc", 1)
+
+    def test_parse_dev(self) -> None:
+        assert UvPackager().parse("1.0.0.dev3") == SemVer(1, 0, 0, "dev", 3)
+
+    def test_parse_invalid_raises(self) -> None:
+        with pytest.raises(VersionParseError):
+            UvPackager().parse("not-a-version")
+
+    def test_format_release(self) -> None:
+        assert UvPackager().format(SemVer(1, 2, 3)) == "1.2.3"
+
+    def test_format_alpha_to_short(self) -> None:
         assert UvPackager().format(SemVer(2, 0, 0, "alpha", 1)) == "2.0.0a1"
+
+    def test_format_dev(self) -> None:
+        assert UvPackager().format(SemVer(1, 0, 0, "dev", 3)) == "1.0.0.dev3"
 
     def test_extract_version_string_reads_pyproject(self, tmp_path: Path) -> None:
         pyproject = tmp_path / "pyproject.toml"

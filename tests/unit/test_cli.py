@@ -58,6 +58,7 @@ def patch_tagger(tagger: MagicMock):
         mock_cls.from_tag_pattern.return_value = tagger
         mock_cls.from_version_string.return_value = tagger
         mock_cls.from_tag_string.return_value = tagger
+        mock_cls.from_version_or_tag_string.return_value = tagger
         yield mock_cls
 
 
@@ -194,7 +195,17 @@ class TestCheck:
         with patch_packagers(packager), patch_tagger(tagger) as mock_cls:
             runner.invoke(cli, ["check", "1.0.0"])
 
-        mock_cls.from_version_string.assert_called_once_with("1.0.0", DEFAULT_TAG_PATTERN)
+        mock_cls.from_version_or_tag_string.assert_called_once_with("1.0.0", DEFAULT_TAG_PATTERN)
+
+    def test_full_tag_string_accepted(self) -> None:
+        packager = mock_packager(SemVer(1, 0, 0))
+        tagger = mock_tagger("1.0.0")
+        tagger.check.return_value = None
+
+        with patch_packagers(packager), patch_tagger(tagger) as mock_cls:
+            runner.invoke(cli, ["check", "v1.0.0"])
+
+        mock_cls.from_version_or_tag_string.assert_called_once_with("v1.0.0", DEFAULT_TAG_PATTERN)
 
     def test_custom_tag_pattern_forwarded(self) -> None:
         packager = mock_packager(SemVer(1, 0, 0))
@@ -204,7 +215,7 @@ class TestCheck:
         with patch_packagers(packager), patch_tagger(tagger) as mock_cls:
             runner.invoke(cli, ["check", "1.0.0", "--tag-pattern", "release/qastg/{version}"])
 
-        mock_cls.from_version_string.assert_called_once_with("1.0.0", "release/qastg/{version}")
+        mock_cls.from_version_or_tag_string.assert_called_once_with("1.0.0", "release/qastg/{version}")
 
     def test_directory_option_passed_to_resolve_packager(self, tmp_path: Path) -> None:
         packager = mock_packager(SemVer(1, 0, 0))
@@ -238,14 +249,23 @@ class TestPublish:
         tagger.make_tag.assert_called_once_with(dry_run=False)
         tagger.push_tag.assert_called_once_with(dry_run=False)
 
-    def test_explicit_version_uses_from_version_string(self) -> None:
+    def test_explicit_version_uses_from_version_or_tag_string(self) -> None:
         packager = mock_packager(SemVer(1, 0, 0))
         tagger = mock_tagger("1.0.0")
 
         with patch_packagers(packager), patch_tagger(tagger) as mock_cls:
             runner.invoke(cli, ["publish", "1.0.0"])
 
-        mock_cls.from_version_string.assert_called_once_with("1.0.0", DEFAULT_TAG_PATTERN)
+        mock_cls.from_version_or_tag_string.assert_called_once_with("1.0.0", DEFAULT_TAG_PATTERN)
+
+    def test_full_tag_string_accepted(self) -> None:
+        packager = mock_packager(SemVer(1, 0, 0))
+        tagger = mock_tagger("1.0.0")
+
+        with patch_packagers(packager), patch_tagger(tagger) as mock_cls:
+            runner.invoke(cli, ["publish", "v1.0.0"])
+
+        mock_cls.from_version_or_tag_string.assert_called_once_with("v1.0.0", DEFAULT_TAG_PATTERN)
 
     def test_explicit_version_custom_tag_pattern(self) -> None:
         packager = mock_packager(SemVer(1, 0, 0))
@@ -254,7 +274,7 @@ class TestPublish:
         with patch_packagers(packager), patch_tagger(tagger) as mock_cls:
             runner.invoke(cli, ["publish", "1.0.0", "--tag-pattern", "release/qastg/{version}"])
 
-        mock_cls.from_version_string.assert_called_once_with("1.0.0", "release/qastg/{version}")
+        mock_cls.from_version_or_tag_string.assert_called_once_with("1.0.0", "release/qastg/{version}")
 
     def test_omitted_version_skips_check(self) -> None:
         packager = mock_packager(SemVer(1, 0, 0))
@@ -430,7 +450,15 @@ class TestNuke:
         with patch_tagger(tagger) as mock_cls:
             runner.invoke(cli, ["nuke", "--force", "--tag-pattern", "release/qastg/{version}", "1.0.0"])
 
-        mock_cls.from_version_string.assert_called_once_with("1.0.0", "release/qastg/{version}")
+        mock_cls.from_version_or_tag_string.assert_called_once_with("1.0.0", "release/qastg/{version}")
+
+    def test_full_tag_string_accepted(self) -> None:
+        tagger = mock_tagger("1.0.0")
+
+        with patch_tagger(tagger) as mock_cls:
+            runner.invoke(cli, ["nuke", "--force", "v1.0.0"])
+
+        mock_cls.from_version_or_tag_string.assert_called_once_with("v1.0.0", DEFAULT_TAG_PATTERN)
 
     def test_git_error_on_delete_local_fails(self) -> None:
         tagger = mock_tagger("1.0.0")
@@ -488,7 +516,7 @@ class TestConfigIntegration:
         with patch_packagers(packager), patch_tagger(tagger) as mock_cls, patch_config(CONFIG_PATTERN):
             runner.invoke(cli, ["check", "1.0.0"])
 
-        mock_cls.from_version_string.assert_called_once_with("1.0.0", CONFIG_PATTERN)
+        mock_cls.from_version_or_tag_string.assert_called_once_with("1.0.0", CONFIG_PATTERN)
 
     def test_publish_uses_config_pattern_when_no_cli_flag(self) -> None:
         packager = mock_packager(SemVer(2, 3, 4))
@@ -514,7 +542,7 @@ class TestConfigIntegration:
         with patch_tagger(tagger) as mock_cls, patch_config(CONFIG_PATTERN):
             runner.invoke(cli, ["nuke", "--force", "1.0.0"])
 
-        mock_cls.from_version_string.assert_called_once_with("1.0.0", CONFIG_PATTERN)
+        mock_cls.from_version_or_tag_string.assert_called_once_with("1.0.0", CONFIG_PATTERN)
 
     def test_falls_back_to_default_when_no_config_and_no_flag(self) -> None:
         packager = mock_packager(SemVer(1, 0, 0))

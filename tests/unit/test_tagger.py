@@ -98,9 +98,7 @@ class TestTaggerFromTagPattern:
         mock_repo = MagicMock()
         with patch("tag_sync.tagger.Repo", return_value=mock_repo):
             tagger.delete_remote_tag()
-        mock_repo.remotes["origin"].push.assert_called_once_with(
-            refspec=":refs/tags/release/qastg/1.2.3"
-        )
+        mock_repo.remotes["origin"].push.assert_called_once_with(refspec=":refs/tags/release/qastg/1.2.3")
 
     def test_require_unpublished_error_includes_full_tag(self) -> None:
         tagger = Tagger.from_tag_pattern(SemVer(1, 2, 3), "release/qastg/{version}")
@@ -169,6 +167,47 @@ class TestTaggerFromTagString:
         tagger_b = Tagger.from_tag_string(full_tag, tag_pattern)
         assert tagger_b.version == semver
         assert tagger_b.pattern.format(tagger_b.version) == full_tag
+
+
+# ---------------------------------------------------------------------------
+# Tagger.from_version_or_tag_string
+# ---------------------------------------------------------------------------
+
+
+class TestTaggerFromVersionOrTagString:
+    def test_bare_semver_default_pattern(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("1.2.3")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "v1.2.3"
+
+    def test_full_tag_default_pattern(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("v1.2.3")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "v1.2.3"
+
+    def test_full_tag_custom_pattern(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("release/qastg/1.2.3", "release/qastg/{version}")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "release/qastg/1.2.3"
+
+    def test_bare_semver_custom_pattern(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("1.2.3", "release/qastg/{version}")
+        assert tagger.version == SemVer(1, 2, 3)
+        assert tagger.pattern.format(tagger.version) == "release/qastg/1.2.3"
+
+    def test_prerelease_bare_semver(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("2.0.0-alpha.1")
+        assert tagger.version == SemVer(2, 0, 0, "alpha", 1)
+        assert tagger.pattern.format(tagger.version) == "v2.0.0-alpha.1"
+
+    def test_prerelease_full_tag(self) -> None:
+        tagger = Tagger.from_version_or_tag_string("v2.0.0-alpha.1")
+        assert tagger.version == SemVer(2, 0, 0, "alpha", 1)
+        assert tagger.pattern.format(tagger.version) == "v2.0.0-alpha.1"
+
+    def test_invalid_string_raises(self) -> None:
+        with pytest.raises(Exception):
+            Tagger.from_version_or_tag_string("not-a-version")
 
 
 # ---------------------------------------------------------------------------
